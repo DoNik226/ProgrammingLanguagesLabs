@@ -1,0 +1,116 @@
+@startuml
+
+skinparam monochrome true
+skinparam shadowing false
+
+actor Пользователь <<User>>
+node Портал <<Portal>> #LightBlue {
+  rectangle ВебИнтерфейс <<Web UI>>
+}
+
+cloud Инфраструктура <<Infrastructure>> #Gray {
+  node ШлюзAPI <<API Gateway>> #LightGreen {
+    rectangle ОбработкаЗапросов <<Request Processing>>
+  }
+
+  cloud Сервисы <<Services>> #Yellow {
+    node ЗаказКниг <<Order Books>> #Orange {
+      rectangle ФормированиеЗаказа <<Book Ordering>>
+    }
+
+    node УчётКниг <<Account Books>> #Orange {
+      rectangle Бухгалтерия <<Accounting>>
+    }
+
+    node Пользователи <<Users>> #Orange {
+      rectangle Аутентификация <<Authentication>>
+      rectangle Авторизация <<Authorization>>
+    }
+
+    node Напоминания <<Reminders>> #Orange {
+      rectangle ОтправкаОповещений <<Notification Sending>>
+    }
+
+    node Оплата <<Payments>> #Orange {
+      rectangle ОбработкаПлатежей <<Payment Processing>>
+    }
+
+    node Доставка <<Delivery>> #Orange {
+      rectangle Логистика <<Logistics Management>>
+    }
+  }
+
+  database БазыДанных <<Databases>> #Pink {
+    component Postgres <<Postgres>>
+    component MongoDB <<MongoDB>>
+    component Redis <<Redis>>
+  }
+
+  cloud Сообщения <<Messaging>> #Purple {
+    component Kafka <<Kafka>>
+    component RabbitMQ <<RabbitMQ>>
+  }
+
+  cloud Логирование <<Logging>> #Brown {
+    component Elasticsearch <<Elasticsearch>>
+    component Kibana <<Kibana>>
+    component Filebeat <<Filebeat>>
+  }
+
+  cloud Безопасность <<Security>> #Red {
+    component Keycloak <<Keycloak>>
+  }
+
+  cloud Кэш <<Cache>> #LightBlue {
+    component Memcached <<Memcached>>
+  }
+
+  cloud Наблюдаемость <<Observability>> #DarkGreen {
+    component Prometheus <<Prometheus>>
+    component Grafana <<Grafana>>
+  }
+}
+
+Пользователь --> Портал : Использует
+Портал --> ШлюзAPI : Запросы к API
+ШлюзAPI --> ЗаказКниг : Заказ книг
+ШлюзAPI --> УчётКниг : Учёт книг
+ШлюзAPI --> Пользователи : Пользователи
+ШлюзAPI --> Напоминания : Напоминания
+ШлюзAPI --> Оплата : Безналичные платежи
+ШлюзAPI --> Доставка : Доставка книг
+
+ЗаказКниг --> Postgres : Запись данных
+ЗаказКниг --> Kafka : Отправка уведомлений
+ЗаказКниг --> RabbitMQ : Очередь задач
+
+УчётКниг --> Postgres : Учёт данных
+УчётКниг --> Kafka : Отчётность
+УчётКниг --> RabbitMQ : Асинхронные задачи
+
+Пользователи --> Postgres : Авторизация и аутентификация
+Пользователи --> Keycloak : Централизация безопасности
+
+Напоминания --> Redis : Временные данные
+Напоминания --> Kafka : Распространение уведомлений
+
+Оплата --> Postgres : Транзакции
+Оплата --> Kafka : Подтверждение оплаты
+
+Доставка --> Postgres : Маршруты и логистические данные
+Доставка --> Kafka : Логи доставки
+
+ЗаказКниг ..> БазыДанных : Получает данные
+УчётКниг ..> БазыДанных : Обновляет данные
+Пользователи ..> БазыДанных : Управляет пользователями
+Напоминания ..> БазыДанных : Чтение и сохранение уведомлений
+Оплата ..> БазыДанных : Сохраняет финансовые данные
+Доставка ..> БазыДанных : Доступ к логистическим данным
+
+Сообщения <-- БазыДанных : Сообщения и уведомления
+Логирование <-- БазыДанных : Сбор логов
+Безопасность <-- БазыДанных : Аутентификация и авторизация
+Кэш <-- БазыДанных : Кэширование данных
+Наблюдаемость <-- БазыДанных : Наблюдаемость и мониторинг
+
+@enduml
